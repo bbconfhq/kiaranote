@@ -8,6 +8,10 @@
 - Golang 1.18+
 - [goose](https://github.com/pressly/goose)
 
+### 프로젝트 의존성 설치
+
+`go mod tidy`
+
 ### Database
 
 **`x86_64` 아키텍쳐 환경이 아닌 경우에는 따로 mysql 이미지를 내려받아야합니다.**

@@ -49,10 +49,10 @@ CREATE TABLE IF NOT EXISTS `note`
 CREATE TABLE IF NOT EXISTS `comment`
 (
     `id`                  BIGINT        NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `parent_id`           BIGINT        NULL,
     `user_id`             BIGINT        NOT NULL,
     `note_id`             BIGINT        NOT NULL,
     `content`             TEXT          NOT NULL,
-    `parent_id`           BIGINT        NULL,
     `create_dt`           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_dt`           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `delete_dt`           DATETIME      NULL,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `comment`
 
 CREATE TABLE IF NOT EXISTS `shared_note`
 (
-    `id`                  BIGINT        NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `id`                  VARCHAR(12)   NOT NULL PRIMARY KEY,
     `user_id`             BIGINT        NOT NULL,
     `note_id`             BIGINT        NOT NULL,
     `password`            VARCHAR(255)  NOT NULL DEFAULT '',

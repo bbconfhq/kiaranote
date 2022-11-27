@@ -9,6 +9,5 @@ dbinit:
 
 goose:
 ifeq ($(env), $(filter $(env),local test))
-	db=kiaranote; \
-	goose -dir tools/migrations mysql root:kiara-root-pass@tcp\(localhost:3306\)/$$db?parseTime=true $(c)
+	goose -dir tools/migrations mysql root:admin-root-pass@tcp\(localhost:3306\)/kiaranote?parseTime=true $(c)
 endif

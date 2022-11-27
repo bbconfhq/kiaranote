@@ -7,6 +7,13 @@ db:
 dbinit:
 	mysql -h 127.0.0.1 -u root -p < tools/init/db.sql
 
+create_migration:
+ifneq ($(name),)
+	cd tools/migrations && goose create $(name) sql
+else
+	echo "name is empty"
+endif
+
 goose:
 ifeq ($(env), $(filter $(env),local test))
 	goose -dir tools/migrations mysql root:admin-root-pass@tcp\(localhost:3306\)/kiaranote?parseTime=true $(c)

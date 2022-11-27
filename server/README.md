@@ -25,6 +25,9 @@ docker pull mysql:8.0 --platform=x86_64
 
 **Example:**
 
+새 마이그레이션 생성
+- `make create_migration name=<migration name>`
+
 마이그레이션 적용
 - `make goose env=local c=up`
 

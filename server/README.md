@@ -16,8 +16,8 @@
 docker pull mysql:8.0 --platform=x86_64
 ```
 
-1. `make localdb`로 로컬 데이터베이스 컨테이너를 실행합니다.
-2. `mysql -uroot -p -h 127.0.0.1 kiaranote < tools/init/init.sql` 명령어로 기본 데이터베이스 스키마를 생성합니다.
+1. `make db`로 로컬 데이터베이스 컨테이너를 실행합니다.
+2. `make dbinit`명령어로 기본 데이터베이스 스키마를 생성합니다. (로컬 데이터베이스 root 계정 비밀번호는 `.docker/docker-compose.dev.yaml` 참조)
 
 #### Database Migration
 

@@ -22,6 +22,16 @@ func encodeHash(value string) string {
 	return hex.EncodeToString(key)
 }
 
+// V1Login   godoc
+// @Summary      Login
+// @Description  Request login
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Success      200	{object}	response
+// @Failure      401	{object}	response
+// @Failure      500	{object}	response
+// @Router       /auth/login [get]
 func V1Login(req *LoginRequest, c echo.Context) Response {
 	repo := dao.GetRepo()
 	rows, err := repo.Reader().Query("SELECT id, username FROM user WHERE username = ? AND password = ?", req.Username, encodeHash(req.Password))
@@ -73,6 +83,15 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 
 type LogoutRequest struct{}
 
+// V1Logout	     godoc
+// @Summary      Logout
+// @Description  Request logout
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Success      200	{object}	response
+// @Failure      500	{object}	response
+// @Router       /auth/logout [get]
 func V1Logout(_ *LogoutRequest, c echo.Context) Response {
 	sess, err := session.Get("session", c)
 	if err != nil {

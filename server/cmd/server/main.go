@@ -14,6 +14,20 @@ import (
 	"os"
 )
 
+// @title kiaranote
+// @version 0.1
+// @description kiaranote is simple notion-like service
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Ryo
+// @contact.url https://github.com/bbconfhq/kiaranote
+// @contact.email gwanryo@gmail.com
+
+// @license.name MIT
+// @license.url https://github.com/bbconfhq/kiaranote/blob/main/LICENSE
+
+// @host
+// @BasePath /v1
 func main() {
 	if err := godotenv.Load(".env.local", ".env"); err != nil {
 		panic(err)

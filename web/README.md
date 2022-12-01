@@ -1,4 +1,4 @@
-# kiaranote web
+# kiaranote-web
 
 Run local development server
 ```

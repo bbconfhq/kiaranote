@@ -10,13 +10,15 @@
 
 ### 프로젝트 의존성 설치
 
-`go mod tidy`
+```shell
+go mod tidy
+```
 
 ### Database
 
 **`x86_64` 아키텍쳐 환경이 아닌 경우에는 따로 mysql 이미지를 내려받아야합니다.**
 
-```
+```shell
 docker pull mysql:8.0 --platform=x86_64
 ```
 
@@ -30,14 +32,38 @@ docker pull mysql:8.0 --platform=x86_64
 **Example:**
 
 새 마이그레이션 생성
-- `make create_migration name=<migration name>`
+
+```shell
+make create_migration name=<migration name>
+```
 
 마이그레이션 적용
-- `make goose env=local c=up`
+
+```shell
+make goose env=local c=up
+```
 
 마지막 마이그레이션 롤백
-- `make goose env=local c=down`
+
+```shell
+make goose env=local c=down
+```
 
 ### Server
 
-`make run`으로 서버를 실행합니다.
+서버를 실행합니다.
+
+```shell
+make run
+```
+
+### After work
+
+작업 이후 **반드시** swagger 문서를 업데이트하여 같이 커밋해주세요.
+
+> Note: `--parseDependency` 옵션이 에러가 발생합니다. 원인 파악 후 조치하겠습니다.
+
+```shell
+swag init -d .\cmd\server\,.\ --parseInternal --generatedTime
+```
+

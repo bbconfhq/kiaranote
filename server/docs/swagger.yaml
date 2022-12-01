@@ -1,0 +1,77 @@
+basePath: /v1
+definitions:
+  handler.response:
+    properties:
+      data: {}
+      error:
+        type: integer
+    type: object
+info:
+  contact:
+    email: gwanryo@gmail.com
+    name: Ryo
+    url: https://github.com/bbconfhq/kiaranote
+  description: kiaranote is simple notion-like service
+  license:
+    name: MIT
+    url: https://github.com/bbconfhq/kiaranote/blob/main/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: kiaranote
+  version: "0.1"
+paths:
+  /auth/login:
+    get:
+      consumes:
+      - application/json
+      description: Request login
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.response'
+      summary: Login
+      tags:
+      - Auth
+  /auth/logout:
+    get:
+      consumes:
+      - application/json
+      description: Request logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.response'
+      summary: Logout
+      tags:
+      - Auth
+  /healthcheck:
+    get:
+      description: Check health
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - healthcheck
+swagger: "2.0"

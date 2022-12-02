@@ -4,8 +4,15 @@ services:
   db:
     image: mysql:8.0
     environment:
-      - MYSQL_ROOT_PASSWORD=admin-root-pass
+      MYSQL_ROOT_PASSWORD: 'kiara_is_not_a_vtuber'
+    restart: always
+    healthcheck:
+      test: mysqladmin ping -h localhost
+      interval: 10s
+      timeout: 5s
+      retries: 40
     volumes:
       - './.localdb:/var/lib/mysql'
+      - '../tools/init/:/docker-entrypoint-initdb.d/'
     ports:
       - 3306:3306

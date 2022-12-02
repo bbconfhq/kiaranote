@@ -2,22 +2,25 @@ package handler
 
 import (
 	"encoding/hex"
+	"github.com/bbconfhq/kiaranote/internal/common"
+	"github.com/bbconfhq/kiaranote/internal/constant"
 	"github.com/bbconfhq/kiaranote/internal/dao"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/scrypt"
 	"net/http"
+	"time"
 )
 
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
+	Password string `json:"password" validate:"required"`
 }
 
 const salt = ""
 
-func encodeHash(value string) string {
+func EncodeHash(value string) string {
 	key, _ := scrypt.Key([]byte(value), []byte(salt), 32768, 8, 1, 32)
 	return hex.EncodeToString(key)
 }
@@ -28,13 +31,15 @@ func encodeHash(value string) string {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
+// @Param        req	body		LoginRequest	true	"Username and password"
 // @Success      200	{object}	response
+// @Failure      400	{object}	response
 // @Failure      401	{object}	response
 // @Failure      500	{object}	response
-// @Router       /auth/login [get]
-func V1Login(req *LoginRequest, c echo.Context) Response {
+// @Router       /auth/login [post]
+func V1Login(req *LoginRequest, c echo.Context) common.Response {
 	repo := dao.GetRepo()
-	rows, err := repo.Reader().Query("SELECT id, username, role FROM user WHERE username = ? AND password = ?", req.Username, encodeHash(req.Password))
+	rows, err := repo.Reader().Query("SELECT id, username, role FROM user WHERE username = ? AND password = ?", req.Username, EncodeHash(req.Password))
 	if err != nil {
 		panic(err)
 	}
@@ -45,16 +50,16 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 		role     string
 	)
 	if rows.Next() {
-		err := rows.Scan(&id, &username, role)
+		err := rows.Scan(&id, &username, &role)
 		if err != nil {
 			panic(err)
 		}
 
 		sess, err := session.Get("session", c)
 		if err != nil {
-			return Response{
+			return common.Response{
 				Code:  http.StatusInternalServerError,
-				Error: ErrSession,
+				Error: constant.ErrSession,
 			}
 		}
 		sess.Options = &sessions.Options{
@@ -66,19 +71,26 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 		sess.Values["username"] = username
 		sess.Values["user_role"] = role
 		if err := sess.Save(c.Request(), c.Response()); err != nil {
-			return Response{
+			return common.Response{
 				Code:  http.StatusInternalServerError,
-				Error: ErrInternal,
+				Error: constant.ErrInternal,
 			}
 		}
 
-		return Response{
+		_, err = repo.Writer().Exec(
+			`UPDATE user SET last_login_dt = ? WHERE id = ?`, time.Now(), id,
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		return common.Response{
 			Code: http.StatusOK,
 		}
 	} else {
-		return Response{
+		return common.Response{
 			Code:  http.StatusUnauthorized,
-			Error: ErrUnauthorized,
+			Error: constant.ErrUnauthorized,
 		}
 	}
 }
@@ -92,14 +104,15 @@ type LogoutRequest struct{}
 // @Accept       json
 // @Produce      json
 // @Success      200	{object}	response
+// @Failure      400	{object}	response
 // @Failure      500	{object}	response
 // @Router       /auth/logout [get]
-func V1Logout(_ *LogoutRequest, c echo.Context) Response {
+func V1Logout(_ *LogoutRequest, c echo.Context) common.Response {
 	sess, err := session.Get("session", c)
 	if err != nil {
-		return Response{
+		return common.Response{
 			Code:  http.StatusInternalServerError,
-			Error: ErrSession,
+			Error: constant.ErrSession,
 		}
 	}
 	sess.Options = &sessions.Options{
@@ -108,12 +121,12 @@ func V1Logout(_ *LogoutRequest, c echo.Context) Response {
 		HttpOnly: true,
 	}
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		return Response{
+		return common.Response{
 			Code:  http.StatusInternalServerError,
-			Error: ErrInternal,
+			Error: constant.ErrInternal,
 		}
 	}
-	return Response{
+	return common.Response{
 		Code: http.StatusOK,
 	}
 }

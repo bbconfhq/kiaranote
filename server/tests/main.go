@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"fmt"
@@ -7,29 +7,21 @@ import (
 	"github.com/bbconfhq/kiaranote/internal/handler"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"os"
+	"path"
+	"runtime"
 )
 
-// @title kiaranote
-// @version 0.1
-// @description kiaranote is simple notion-like service
-// @termsOfService http://swagger.io/terms/
+func MockMain() (*echo.Echo, dao.Repository) {
+	_, filename, _, _ := runtime.Caller(0)
+	env := path.Join(path.Dir(filename), "..", ".env.test")
 
-// @contact.name Ryo
-// @contact.url https://github.com/bbconfhq/kiaranote
-// @contact.email gwanryo@gmail.com
-
-// @license.name MIT
-// @license.url https://github.com/bbconfhq/kiaranote/blob/main/LICENSE
-
-// @host
-// @BasePath /v1
-func main() {
-	if err := godotenv.Load(".env.local", ".env"); err != nil {
+	if err := godotenv.Load(env); err != nil {
 		panic(err)
 	}
 
@@ -52,12 +44,22 @@ func main() {
 	dao.InitRepo(reader, writer)
 
 	e := echo.New()
-	secret := os.Getenv("COOKIE_SECRET")
+	secret := ""
 	e.Use(middleware.Logger())
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(secret))))
 	e.Validator = &handler.RequestValidator{
 		Validator: validator.New(),
 	}
 	handler.InitV1Handler(e)
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", os.Getenv("PORT"))))
+
+	return e, dao.GetRepo()
+}
+
+func TruncateTable(writer *sqlx.DB, tables []string) {
+	for _, table := range tables {
+		_, err := writer.Exec(`DELETE FROM ` + table)
+		if err != nil {
+			panic(fmt.Sprintf("failed to delete all rows from table %s", table))
+		}
+	}
 }

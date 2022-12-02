@@ -1,4 +1,4 @@
-package handler
+package constant
 
 const (
 	NoError = 0
@@ -12,4 +12,8 @@ const (
 	ErrSession = 45000
 
 	ErrInternal = 50000
+)
+
+const (
+	MysqlDuplicateEntry = 1062
 )

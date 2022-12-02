@@ -26,12 +26,31 @@ go install github.com/swaggo/swag/cmd/swag@latest
 docker pull mysql:8.0 --platform=x86_64
 ```
 
-1. `make db`로 로컬 데이터베이스 컨테이너를 실행합니다.
-2. `make dbinit`명령어로 기본 데이터베이스 스키마를 생성합니다. (로컬 데이터베이스 root 계정 비밀번호는 `.docker/docker-compose.dev.yaml` 참조)
+`make db c=[up|down|init]` 명령어로 사용합니다.
+
+**Example:**
+
+새 MySQL Docker 생성
+
+```shell
+make db c=up
+```
+
+MySQL Docker 제거 및 Volume 제거
+
+```shell
+make db c=down
+```
+
+초기 DB 스크립트 실행 (Non-docker 환경에서 필요)
+
+```shell
+make db c=init
+```
 
 #### Database Migration
 
-`make goose env=[ENV] c=[goose command]` 명령어로 사용합니다.
+`make goose env=[local|dev|test] c=[goose command]` 명령어로 사용합니다.
 
 **Example:**
 
@@ -61,13 +80,14 @@ make goose env=local c=down
 make run
 ```
 
-### After work
+### Swagger
 
-작업 이후 **반드시** swagger 문서를 업데이트하여 같이 커밋해주세요.
+현재 swagger를 사용하려면 아래 명령어 입력 후 서버를 실행해주어야 합니다.
+
+`docs`를 커밋에 올리지 말아주세요.
 
 > Note: `--parseDependency` 옵션이 에러가 발생합니다. 원인 파악 후 조치하겠습니다.
 
 ```shell
 swag init -d ./cmd/server/,./ --parseInternal --generatedTime
 ```
-

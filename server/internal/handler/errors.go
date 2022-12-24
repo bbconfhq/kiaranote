@@ -7,7 +7,7 @@ const (
 	ErrBadRequest     = 40401
 	ErrValidationFail = 40402
 
-	ErrInvalidCredential = 41000
+	ErrUnauthorized = 41000
 
 	ErrSession = 45000
 

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `user`
     `id`                  BIGINT        NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `username`            VARCHAR(20)   NOT NULL,
     `password`            VARCHAR(255)  NOT NULL,
-    `role`                VARCHAR(20)   NOT NULL DEFAULT 'GUEST',
+    `role`                VARCHAR(20)   NOT NULL DEFAULT 'guest',
     `last_login_dt`       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `create_dt`           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_dt`           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,

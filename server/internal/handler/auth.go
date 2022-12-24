@@ -34,7 +34,7 @@ func encodeHash(value string) string {
 // @Router       /auth/login [get]
 func V1Login(req *LoginRequest, c echo.Context) Response {
 	repo := dao.GetRepo()
-	rows, err := repo.Reader().Query("SELECT id, username FROM user WHERE username = ? AND password = ?", req.Username, encodeHash(req.Password))
+	rows, err := repo.Reader().Query("SELECT id, username, role FROM user WHERE username = ? AND password = ?", req.Username, encodeHash(req.Password))
 	if err != nil {
 		panic(err)
 	}
@@ -42,9 +42,10 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 	var (
 		id       int64
 		username string
+		role     string
 	)
 	if rows.Next() {
-		err := rows.Scan(&id, &username)
+		err := rows.Scan(&id, &username, role)
 		if err != nil {
 			panic(err)
 		}
@@ -63,6 +64,7 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 		}
 		sess.Values["user_id"] = id
 		sess.Values["username"] = username
+		sess.Values["user_role"] = role
 		if err := sess.Save(c.Request(), c.Response()); err != nil {
 			return Response{
 				Code:  http.StatusInternalServerError,
@@ -76,7 +78,7 @@ func V1Login(req *LoginRequest, c echo.Context) Response {
 	} else {
 		return Response{
 			Code:  http.StatusUnauthorized,
-			Error: ErrInvalidCredential,
+			Error: ErrUnauthorized,
 		}
 	}
 }

@@ -11,7 +11,11 @@
 ### 프로젝트 의존성 설치
 
 ```shell
+# 프로젝트 의존성 실행
 go mod tidy
+
+# swag 설치
+go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 ### Database
@@ -64,6 +68,6 @@ make run
 > Note: `--parseDependency` 옵션이 에러가 발생합니다. 원인 파악 후 조치하겠습니다.
 
 ```shell
-swag init -d .\cmd\server\,.\ --parseInternal --generatedTime
+swag init -d ./cmd/server/,./ --parseInternal --generatedTime
 ```
 

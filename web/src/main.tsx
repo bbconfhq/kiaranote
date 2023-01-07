@@ -1,30 +1,30 @@
-import {
-  RouterProvider,
-  createReactRouter,
-  createRouteConfig,
-} from '@tanstack/react-router';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {
+  BrowserRouter, Navigate,
+  Route,
+  Routes,
+} from 'react-router-dom';
 
-import App from './App';
 import './index.css';
+import AdminLayout from './components/admin-layout';
+import AdminUserEditPage from './pages/admin/user-edit';
+import AdminUserListPage from './pages/admin/user-list';
+import AdminUserWaitingListPage from './pages/admin/user-waiting';
 
-const rootRoute = createRouteConfig();
-const indexRoute = rootRoute.createRoute({
-  path: '/',
-  component: App,
-});
-const routeConfig = rootRoute.addChildren([indexRoute]);
-const router = createReactRouter({ routeConfig });
+// <RouterProvider router={router} />
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route path={'/admin'} element={<Navigate to={'/admin/users'} replace />} />
+          <Route path={'/admin/users'} element={<AdminUserListPage />} />
+          <Route path={'/admin/users/waiting'} element={<AdminUserWaitingListPage />} />
+          <Route path={'/admin/users/:id'} element={<AdminUserEditPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>
 );
-
-declare module '@tanstack/react-router' {
-  interface RegisterRouter {
-    router: typeof router
-  }
-}

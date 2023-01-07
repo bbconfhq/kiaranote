@@ -1,7 +1,7 @@
 import {
   UserOutlined,
 } from '@ant-design/icons';
-import {Layout as AntdLayout, Menu, MenuProps} from 'antd';
+import {Layout, Menu, MenuProps} from 'antd';
 import React from 'react';
 import {Link, Outlet} from 'react-router-dom';
 
@@ -26,21 +26,21 @@ const items: MenuItem[] = [
   ]),
 ];
 const AdminLayout = () => {
-  const { Content, Sider } = AntdLayout;
+  const { Content, Sider } = Layout;
 
   return (
-    <AntdLayout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh' }}>
       <Sider theme={'light'} collapsed={false}>
         <Menu style={{padding: '8px 4px'}} theme='light' defaultSelectedKeys={['user-list']} mode='inline' openKeys={['user-mgmt']} items={items} />
       </Sider>
-      <AntdLayout className='site-layout'>
+      <Layout className='site-layout'>
         <Content style={{ margin: '0 16px' }}>
           <div style={{ paddingTop: 24, paddingBottom: 24, minHeight: 360 }}>
             <Outlet />
           </div>
         </Content>
-      </AntdLayout>
-    </AntdLayout>
+      </Layout>
+    </Layout>
   );
 };
 

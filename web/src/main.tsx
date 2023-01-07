@@ -8,9 +8,12 @@ import {
 
 import './index.css';
 import AdminLayout from './components/admin-layout';
+import AuthLayout from './components/auth-layout';
 import AdminUserEditPage from './pages/admin/user-edit';
 import AdminUserListPage from './pages/admin/user-list';
 import AdminUserWaitingListPage from './pages/admin/user-waiting';
+import RegisterPage from './pages/register';
+import SignInPage from './pages/sign-in';
 
 // <RouterProvider router={router} />
 
@@ -23,6 +26,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
           <Route path={'/admin/users'} element={<AdminUserListPage />} />
           <Route path={'/admin/users/waiting'} element={<AdminUserWaitingListPage />} />
           <Route path={'/admin/users/:id'} element={<AdminUserEditPage />} />
+        </Route>
+        <Route element={<AuthLayout />}>
+          <Route path={'/sign-in'} element={<SignInPage />} />
+          <Route path={'/register'} element={<RegisterPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

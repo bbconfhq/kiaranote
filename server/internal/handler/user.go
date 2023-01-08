@@ -86,7 +86,7 @@ type PostUsersRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-// V1PostUsers   godoc
+// V1PostUser   godoc
 // @Summary      Post user
 // @Description  Register new user, role >= ADMIN
 // @Tags         Users
@@ -98,7 +98,7 @@ type PostUsersRequest struct {
 // @Failure      401	{object}	nil
 // @Failure      500	{object}	nil
 // @Router       /user [post]
-func V1PostUsers(req *PostUsersRequest, _ echo.Context) common.Response {
+func V1PostUser(req *PostUsersRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
 	_, err := repo.Writer().Exec(
 		`INSERT INTO user (username, password) VALUES (?, ?)`, req.Username, EncodeHash(req.Password),

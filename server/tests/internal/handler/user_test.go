@@ -76,7 +76,7 @@ func TestV1GetUsers(t *testing.T) {
 	assert.Equal(t, "1", user.Username)
 }
 
-func TestV1PostUsers(t *testing.T) {
+func TestV1PostUser(t *testing.T) {
 	e, repo := tests.MockMain()
 	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
 

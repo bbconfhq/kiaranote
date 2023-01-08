@@ -28,7 +28,7 @@ type GetUsersResponse struct {
 // V1GetUsers   godoc
 // @Summary      Get users
 // @Description  Get list of users, role >= ADMIN
-// @Tags         Users
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Success      200	{object}	[]GetUsersResponse
@@ -89,11 +89,11 @@ type PostUserRequest struct {
 // V1PostUser   godoc
 // @Summary      Post user
 // @Description  Register new user, role >= ADMIN
-// @Tags         Users
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Param        req	body		PostUserRequest	true	"Username and password"
-// @Success      200	{object}	nil
+// @Success      201	{object}	nil
 // @Failure      400	{object}	nil
 // @Failure      401	{object}	nil
 // @Failure      500	{object}	nil
@@ -138,7 +138,7 @@ type GetUserResponse struct {
 // V1GetUser   godoc
 // @Summary      Get user
 // @Description  Get user by user_id, user itself or role >= ADMIN
-// @Tags         Users
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Param        user_id	path		uint			true	"User Id"
@@ -206,7 +206,7 @@ type PutUserRequest struct {
 // V1PutUser   godoc
 // @Summary      Put user
 // @Description  Put user by user_id, user itself or role >= ADMIN
-// @Tags         Users
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Param        user_id	path		uint			true	"User Id"
@@ -280,7 +280,7 @@ type DeleteUserRequest struct {
 // V1DeleteUser   godoc
 // @Summary      Delete user
 // @Description  Delete user by user_id, user itself or role >= ADMIN
-// @Tags         Users
+// @Tags         User
 // @Accept       json
 // @Produce      json
 // @Param        user_id	path		uint			true	"User Id"
@@ -348,7 +348,7 @@ func validateItselfOrAdmin(sess *sessions.Session, reqUserId int64) bool {
 
 	userRole := constant.Role(sess.Values["user_role"].(string))
 
-	if userRole == constant.RoleAdmin {
+	if userId == reqUserId || userRole == constant.RoleAdmin {
 		return true
 	}
 

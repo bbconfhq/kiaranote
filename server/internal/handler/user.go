@@ -81,7 +81,7 @@ func V1GetUsers(_ *GetUsersRequest, _ echo.Context) common.Response {
 	}
 }
 
-type PostUsersRequest struct {
+type PostUserRequest struct {
 	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
 	Password string `json:"password" validate:"required"`
 }
@@ -92,13 +92,13 @@ type PostUsersRequest struct {
 // @Tags         Users
 // @Accept       json
 // @Produce      json
-// @Param        req	body		PostUsersRequest	true	"Username and password"
+// @Param        req	body		PostUserRequest	true	"Username and password"
 // @Success      200	{object}	nil
 // @Failure      400	{object}	nil
 // @Failure      401	{object}	nil
 // @Failure      500	{object}	nil
 // @Router       /user [post]
-func V1PostUser(req *PostUsersRequest, _ echo.Context) common.Response {
+func V1PostUser(req *PostUserRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
 	_, err := repo.Writer().Exec(
 		`INSERT INTO user (username, password) VALUES (?, ?)`, req.Username, EncodeHash(req.Password),

@@ -1,5 +1,8 @@
 # kiaranote-server 
 
+* [Concept](https://demo.hedgedoc.org/JOieJRo0QNesVBdgEel48Q)
+* [ERD](https://www.erdcloud.com/d/h2HrcZe3gYPNMe6Zb)
+
 ## 로컬 개발 환경 설정
 
 ### Prerequisites

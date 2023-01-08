@@ -35,7 +35,7 @@ type GetUsersResponse struct {
 // @Failure      400	{object}	nil
 // @Failure      401	{object}	nil
 // @Failure      500	{object}	nil
-// @Router       /users [get]
+// @Router       /user [get]
 func V1GetUsers(_ *GetUsersRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
 	rows, err := repo.Reader().Query(
@@ -97,7 +97,7 @@ type PostUsersRequest struct {
 // @Failure      400	{object}	nil
 // @Failure      401	{object}	nil
 // @Failure      500	{object}	nil
-// @Router       /users [post]
+// @Router       /user [post]
 func V1PostUsers(req *PostUsersRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
 	_, err := repo.Writer().Exec(
@@ -146,7 +146,7 @@ type GetUserResponse struct {
 // @Failure      400		{object}	nil
 // @Failure      401		{object}	nil
 // @Failure      500		{object}	nil
-// @Router       /users/{user_id} [get]
+// @Router       /user/{user_id} [get]
 func V1GetUser(_ *GetUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
 	if err != nil || userId <= 0 {
@@ -215,7 +215,7 @@ type PutUserRequest struct {
 // @Failure      400		{object}	nil
 // @Failure      401		{object}	nil
 // @Failure      500		{object}	nil
-// @Router       /users/{user_id} [put]
+// @Router       /user/{user_id} [put]
 func V1PutUser(req *PutUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
 	if err != nil || userId <= 0 {
@@ -288,7 +288,7 @@ type DeleteUserRequest struct {
 // @Failure      400		{object}	nil
 // @Failure      401		{object}	nil
 // @Failure      500		{object}	nil
-// @Router       /users/{user_id} [delete]
+// @Router       /user/{user_id} [delete]
 func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
 	if err != nil || userId <= 0 {

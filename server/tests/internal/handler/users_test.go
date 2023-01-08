@@ -106,7 +106,7 @@ func TestV1GetUser(t *testing.T) {
 	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
 
 	c := loginGuest(e)
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues("0")
 
@@ -132,7 +132,7 @@ func TestV1GetUser(t *testing.T) {
 	assert.Equal(t, 1, len(users))
 	assert.Equal(t, "1", users[0].Username)
 
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[0].Id, 10))
 
@@ -149,7 +149,7 @@ func TestV1PutUser(t *testing.T) {
 	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
 
 	c := loginGuest(e)
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues("0")
 
@@ -180,7 +180,7 @@ func TestV1PutUser(t *testing.T) {
 	assert.Equal(t, 1, len(users))
 	assert.Equal(t, "1", users[0].Username)
 
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[0].Id, 10))
 
@@ -190,7 +190,7 @@ func TestV1PutUser(t *testing.T) {
 	}, c)
 	assert.Equal(t, http.StatusOK, response.Code)
 
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[0].Id, 10))
 
@@ -207,7 +207,7 @@ func TestV1DeleteUser(t *testing.T) {
 	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
 
 	c := loginGuest(e)
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues("0")
 
@@ -232,7 +232,7 @@ func TestV1DeleteUser(t *testing.T) {
 	assert.Equal(t, 2, len(users))
 	assert.Equal(t, "2", users[1].Username)
 
-	c.SetPath("/users/:user_id")
+	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[1].Id, 10))
 

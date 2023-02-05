@@ -94,3 +94,11 @@ make run
 ```shell
 swag init -d ./cmd/server/,./ --parseInternal --generatedTime
 ```
+
+### Test
+
+테스트를 위해선 데이터베이스 연결(`.env.test` 참고)이 필요합니다.
+
+```shell
+go test ./...
+```

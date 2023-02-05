@@ -32,13 +32,10 @@ type GetUsersResponse struct {
 // @Accept       json
 // @Produce      json
 // @Success      200	{object}	[]GetUsersResponse
-// @Failure      400	{object}	nil
-// @Failure      401	{object}	nil
-// @Failure      500	{object}	nil
 // @Router       /user [get]
 func V1GetUsers(_ *GetUsersRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
-	rows, err := repo.Reader().Query(
+	rows, err := repo.Reader().Queryx(
 		`SELECT
 			id, username, role, last_login_dt, create_dt, update_dt
 		FROM user
@@ -51,28 +48,12 @@ func V1GetUsers(_ *GetUsersRequest, _ echo.Context) common.Response {
 	users := make([]GetUsersResponse, 0)
 
 	for rows.Next() {
-		var (
-			id          int64
-			username    string
-			role        string
-			lastLoginDt time.Time
-			createDt    time.Time
-			updateDt    time.Time
-		)
-
-		err := rows.Scan(&id, &username, &role, &lastLoginDt, &createDt, &updateDt)
+		var user GetUsersResponse
+		err := rows.StructScan(&user)
 		if err != nil {
 			panic(err)
 		}
-
-		users = append(users, GetUsersResponse{
-			Id:          id,
-			Username:    username,
-			Role:        role,
-			LastLoginDt: lastLoginDt,
-			CreateDt:    createDt,
-			UpdateDt:    updateDt,
-		})
+		users = append(users, user)
 	}
 
 	return common.Response{
@@ -94,9 +75,7 @@ type PostUserRequest struct {
 // @Produce      json
 // @Param        req	body		PostUserRequest	true	"Username and password"
 // @Success      201	{object}	nil
-// @Failure      400	{object}	nil
-// @Failure      401	{object}	nil
-// @Failure      500	{object}	nil
+// @Failure      400	{object}	int
 // @Router       /user [post]
 func V1PostUser(req *PostUserRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
@@ -143,9 +122,9 @@ type GetUserResponse struct {
 // @Produce      json
 // @Param        user_id	path		uint			true	"User Id"
 // @Success      200		{object}	GetUserResponse
-// @Failure      400		{object}	nil
-// @Failure      401		{object}	nil
-// @Failure      500		{object}	nil
+// @Failure      400		{object}	int
+// @Failure      401		{object}	int
+// @Failure      500		{object}	int
 // @Router       /user/{user_id} [get]
 func V1GetUser(_ *GetUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
@@ -212,9 +191,9 @@ type PutUserRequest struct {
 // @Param        user_id	path		uint			true	"User Id"
 // @Param        req		body		PutUserRequest	true	"Username and password"
 // @Success      200		{object}	uint
-// @Failure      400		{object}	nil
-// @Failure      401		{object}	nil
-// @Failure      500		{object}	nil
+// @Failure      400		{object}	int
+// @Failure      401		{object}	int
+// @Failure      500		{object}	int
 // @Router       /user/{user_id} [put]
 func V1PutUser(req *PutUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
@@ -285,9 +264,9 @@ type DeleteUserRequest struct {
 // @Produce      json
 // @Param        user_id	path		uint			true	"User Id"
 // @Success      200		{object}	nil
-// @Failure      400		{object}	nil
-// @Failure      401		{object}	nil
-// @Failure      500		{object}	nil
+// @Failure      400		{object}	int
+// @Failure      401		{object}	int
+// @Failure      500		{object}	int
 // @Router       /user/{user_id} [delete]
 func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"github.com/bbconfhq/kiaranote/internal/dao"
 	"github.com/bbconfhq/kiaranote/internal/datasource/mysql"
 	"github.com/bbconfhq/kiaranote/internal/handler"
@@ -57,9 +56,11 @@ func MockMain() (*echo.Echo, dao.Repository) {
 
 func TruncateTable(writer *sqlx.DB, tables []string) {
 	for _, table := range tables {
-		_, err := writer.Exec(`DELETE FROM ` + table)
+		_ = writer.MustExec(`SET FOREIGN_KEY_CHECKS=0`)
+		_, err := writer.Exec(`TRUNCATE TABLE ` + table)
 		if err != nil {
-			panic(fmt.Sprintf("failed to delete all rows from table %s", table))
+			panic(err)
 		}
+		_ = writer.MustExec(`SET FOREIGN_KEY_CHECKS=1`)
 	}
 }

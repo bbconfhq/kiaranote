@@ -15,7 +15,6 @@ import (
 )
 
 type GetUsersRequest struct{}
-
 type GetUsersResponse struct {
 	Id          int64     `json:"id"`
 	Username    string    `json:"username"`
@@ -74,12 +73,12 @@ type PostUserRequest struct {
 // @Accept       json
 // @Produce      json
 // @Param        req	body		PostUserRequest	true	"Username and password"
-// @Success      201	{object}	nil
+// @Success      201	{object}	int
 // @Failure      400	{object}	int
 // @Router       /user [post]
 func V1PostUser(req *PostUserRequest, _ echo.Context) common.Response {
 	repo := dao.GetRepo()
-	_, err := repo.Writer().Exec(
+	result, err := repo.Writer().Exec(
 		`INSERT INTO user (username, password) VALUES (?, ?)`, req.Username, EncodeHash(req.Password),
 	)
 
@@ -96,7 +95,13 @@ func V1PostUser(req *PostUserRequest, _ echo.Context) common.Response {
 		panic(err)
 	}
 
+	userId, err := result.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
 	return common.Response{
+		Data: userId,
 		Code: http.StatusCreated,
 	}
 }
@@ -104,7 +109,6 @@ func V1PostUser(req *PostUserRequest, _ echo.Context) common.Response {
 type GetUserRequest struct {
 	Id int64 `param:"user_id" validate:"required,gte=1"`
 }
-
 type GetUserResponse struct {
 	Id          int64     `json:"id"`
 	Username    string    `json:"username"`
@@ -126,18 +130,10 @@ type GetUserResponse struct {
 // @Failure      401		{object}	int
 // @Failure      500		{object}	int
 // @Router       /user/{user_id} [get]
-func V1GetUser(_ *GetUserRequest, c echo.Context) common.Response {
-	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
-	if err != nil || userId <= 0 {
-		return common.Response{
-			Code:  http.StatusBadRequest,
-			Error: constant.ErrBadRequest,
-		}
-	}
-
+func V1GetUser(req *GetUserRequest, c echo.Context) common.Response {
 	sess, err := session.Get("session", c)
 
-	if !validateItselfOrAdmin(sess, userId) {
+	if !validateItselfOrAdmin(sess, req.Id) {
 		return common.Response{
 			Code:  http.StatusUnauthorized,
 			Error: constant.ErrUnauthorized,
@@ -150,7 +146,7 @@ func V1GetUser(_ *GetUserRequest, c echo.Context) common.Response {
 			id, username, role, last_login_dt, create_dt, update_dt
 		FROM user
 		WHERE
-		    delete_dt is NULL AND id = ?`, userId,
+		    delete_dt is NULL AND id = ?`, req.Id,
 	)
 	if err != nil {
 		panic(err)
@@ -196,14 +192,6 @@ type PutUserRequest struct {
 // @Failure      500		{object}	int
 // @Router       /user/{user_id} [put]
 func V1PutUser(req *PutUserRequest, c echo.Context) common.Response {
-	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
-	if err != nil || userId <= 0 {
-		return common.Response{
-			Code:  http.StatusBadRequest,
-			Error: constant.ErrBadRequest,
-		}
-	}
-
 	sess, err := session.Get("session", c)
 	if err != nil {
 		return common.Response{
@@ -233,7 +221,7 @@ func V1PutUser(req *PutUserRequest, c echo.Context) common.Response {
 		fields = append(fields, "password = ?")
 		values = append(values, EncodeHash(req.Password))
 	}
-	values = append(values, strconv.FormatInt(userId, 10))
+	values = append(values, strconv.FormatInt(req.Id, 10))
 
 	repo := dao.GetRepo()
 	query := "UPDATE user SET " + strings.Join(fields, ", ") + " WHERE id = ?"
@@ -268,15 +256,7 @@ type DeleteUserRequest struct {
 // @Failure      401		{object}	int
 // @Failure      500		{object}	int
 // @Router       /user/{user_id} [delete]
-func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
-	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 0)
-	if err != nil || userId <= 0 {
-		return common.Response{
-			Code:  http.StatusBadRequest,
-			Error: constant.ErrBadRequest,
-		}
-	}
-
+func V1DeleteUser(req *DeleteUserRequest, c echo.Context) common.Response {
 	sess, err := session.Get("session", c)
 	if err != nil {
 		return common.Response{
@@ -285,7 +265,7 @@ func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
 		}
 	}
 
-	if !validateItselfOrAdmin(sess, userId) {
+	if !validateItselfOrAdmin(sess, req.Id) {
 		return common.Response{
 			Code:  http.StatusUnauthorized,
 			Error: constant.ErrUnauthorized,
@@ -295,7 +275,7 @@ func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
 	repo := dao.GetRepo()
 
 	// 자기 자신을 지울 경우 세션 값 제거
-	if sess.Values["user_id"] == userId {
+	if sess.Values["user_id"] == req.Id {
 		sess.Options = &sessions.Options{
 			Path:     "/",
 			MaxAge:   -1,
@@ -310,7 +290,7 @@ func V1DeleteUser(_ *DeleteUserRequest, c echo.Context) common.Response {
 	}
 
 	_, err = repo.Writer().Exec(
-		`DELETE FROM user WHERE id = ?`, userId,
+		`DELETE FROM user WHERE id = ?`, req.Id,
 	)
 
 	return common.Response{

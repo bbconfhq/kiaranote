@@ -36,14 +36,15 @@ func createNote(repo dao.Repository, username string, title string, content stri
 
 func TestV1GetNotes(t *testing.T) {
 	e, repo := tests.MockMain()
-	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user", "note", "note_hierarchy"})
+	tests.TruncateTable(repo.Reader(), []string{"audit_log", "note_hierarchy", "note", "user"})
 
 	var adminUsername = "1"
 	var adminPassword = "1"
 	createAdmin(repo, adminUsername, adminPassword)
+	c := loginAdmin(e, adminUsername, adminPassword)
+
 	createNote(repo, adminUsername, "public", "public_note", false)
 	createNote(repo, adminUsername, "private", "private_note", true)
-	c := loginAdmin(e, adminUsername, adminPassword)
 
 	response := handler.V1GetNotes(nil, c)
 	assert.NotEmpty(t, response.Data)
@@ -55,10 +56,26 @@ func TestV1GetNotes(t *testing.T) {
 	assert.Equal(t, "private", data.Private[0].Title)
 }
 
-//func TestV1PostNote(t *testing.T) {
-//	e, repo := tests.MockMain()
-//	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
-//}
+func TestV1PostNote(t *testing.T) {
+	e, repo := tests.MockMain()
+	tests.TruncateTable(repo.Reader(), []string{"audit_log", "note_hierarchy", "note", "user"})
+
+	var adminUsername = "1"
+	var adminPassword = "1"
+	createAdmin(repo, adminUsername, adminPassword)
+	c := loginAdmin(e, adminUsername, adminPassword)
+
+	payload := handler.PostNoteRequest{
+		ParentNoteId: 1,
+		Title:        "",
+		Content:      "",
+		IsPrivate:    false,
+		Order:        0,
+	}
+	response := handler.V1PostNote(&payload, c)
+
+	assert.Equal(t, 1, response.Data.(int64))
+}
 
 //func TestV1GetNote(t *testing.T) {
 //	e, repo := tests.MockMain()

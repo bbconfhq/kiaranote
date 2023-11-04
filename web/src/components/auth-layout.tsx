@@ -1,8 +1,14 @@
 import {Layout, Typography} from 'antd';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {Outlet} from 'react-router-dom';
 
+import { getNotes } from '../api/note';
+
 const AuthLayout = () => {
+  useEffect(() => {
+    getNotes().then((res) => console.log(res));
+  }, []);
+  
   const { Content } = Layout;
   const { Title } = Typography;
 

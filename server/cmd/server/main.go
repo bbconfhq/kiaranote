@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/bbconfhq/kiaranote/internal/dao"
 	"github.com/bbconfhq/kiaranote/internal/datasource/mysql"
 	"github.com/bbconfhq/kiaranote/internal/handler"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"os"
 )
 
 // @title kiaranote
@@ -29,10 +31,6 @@ import (
 // @host
 // @BasePath /v1
 func main() {
-	if err := godotenv.Load(".env.local", ".env"); err != nil {
-		panic(err)
-	}
-
 	readerConfig := mysql.Config{
 		User:   os.Getenv("READER_DB_USER"),
 		Passwd: os.Getenv("READER_DB_PASS"),
@@ -54,10 +52,18 @@ func main() {
 	e := echo.New()
 	secret := os.Getenv("COOKIE_SECRET")
 	e.Use(middleware.Logger())
+	if os.Getenv("ENV") == "local" {
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174"},
+			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+			AllowCredentials: true,
+		}))
+	}
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(secret))))
 	e.Validator = &handler.RequestValidator{
 		Validator: validator.New(),
 	}
+	e.Use(middleware.Recover())
 	handler.InitV1Handler(e)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", os.Getenv("PORT"))))
 }

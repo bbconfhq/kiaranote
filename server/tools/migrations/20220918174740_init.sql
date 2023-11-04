@@ -78,11 +78,11 @@ CREATE TABLE IF NOT EXISTS `shared_note`
 CREATE TABLE IF NOT EXISTS `note_hierarchy`
 (
     `note_id`             BIGINT        NOT NULL,
-    `parent_note_id`      BIGINT        NULL,
+    `parent_note_id`      BIGINT        NOT NULL,
     `order`               BIGINT        NOT NULL DEFAULT 1,
 
-    FOREIGN KEY (`note_id`) REFERENCES `note`(`id`),
-    FOREIGN KEY (`parent_note_id`) REFERENCES `note`(`id`),
+    FOREIGN KEY (`note_id`) REFERENCES `note`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (`parent_note_id`) REFERENCES `note`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,
     UNIQUE (`note_id`, `parent_note_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 

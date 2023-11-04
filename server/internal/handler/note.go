@@ -12,8 +12,18 @@ import (
 
 type GetNotesRequest struct{}
 type GetNotesResponse struct {
-	Public  []GetNoteResponse `json:"public"`
-	Private []GetNoteResponse `json:"private"`
+	Public  []*NoteDto `json:"public"`
+	Private []*NoteDto `json:"private"`
+}
+type NoteDto struct {
+	Id         int64      `json:"id"`
+	UserId     int64      `json:"user_id"`
+	Title      string     `json:"title"`
+	Content    string     `json:"content"`
+	IsPrivate  bool       `json:"is_private"`
+	CreateDt   time.Time  `json:"create_dt"`
+	UpdateDt   time.Time  `json:"update_dt"`
+	ChileNotes []*NoteDto `json:"child_notes"`
 }
 
 // V1GetNotes   godoc
@@ -38,13 +48,8 @@ func V1GetNotes(_ *GetNotesRequest, c echo.Context) common.Response {
 		panic("cannot get user_id from session")
 	}
 
-	notes := GetNotesResponse{
-		Public:  make([]GetNoteResponse, 0),
-		Private: make([]GetNoteResponse, 0),
-	}
-
 	repo := dao.GetRepo()
-	publicRows, err := repo.Reader().Queryx(
+	rows, err := repo.Reader().Queryx(
 		`SELECT
     		n.id, h.parent_note_id, n.user_id, n.title, "" as content, n.is_private, n.create_dt, n.update_dt
 		FROM
@@ -53,9 +58,7 @@ func V1GetNotes(_ *GetNotesRequest, c echo.Context) common.Response {
 			note_hierarchy h ON n.id = h.note_id
 		WHERE
 			n.delete_dt is NULL
-			AND n.is_private is FALSE
-		ORDER BY
-			h.order`,
+			AND (n.is_private is FALSE OR (n.is_private is TRUE AND n.user_id = ?))`, userId,
 	)
 	if err != nil {
 		return common.Response{
@@ -64,49 +67,50 @@ func V1GetNotes(_ *GetNotesRequest, c echo.Context) common.Response {
 		}
 	}
 
-	privateRows, err := repo.Reader().Queryx(
-		`SELECT
-    		n.id, h.parent_note_id, n.user_id, n.title, "" as content, n.is_private, n.create_dt, n.update_dt
-		FROM
-		    note n
-		INNER JOIN
-		    note_hierarchy h on n.id = h.note_id
-		WHERE
-			n.delete_dt is NULL
-		  	AND n.user_id = ? 
-		    AND n.is_private is TRUE
-		ORDER BY
-			h.order`, userId,
-	)
-	if err != nil {
-		return common.Response{
-			Code:  http.StatusInternalServerError,
-			Error: constant.ErrInternal,
-		}
-	}
+	notesMap := make(map[int64]*NoteDto)
+	publicNotes := make([]*NoteDto, 0)
+	privateNotes := make([]*NoteDto, 0)
+	childNotes := make(map[int64][]*NoteDto)
 
-	for publicRows.Next() {
+	for rows.Next() {
 		var note GetNoteResponse
-		err := publicRows.StructScan(&note)
+		err := rows.StructScan(&note)
 		if err != nil {
 			return common.Response{
 				Code:  http.StatusInternalServerError,
 				Error: constant.ErrInternal,
 			}
 		}
-		notes.Public = append(notes.Public, note)
+
+		notesMap[note.Id] = &NoteDto{
+			Id:         note.Id,
+			UserId:     note.UserId,
+			Title:      note.Title,
+			Content:    note.Content,
+			IsPrivate:  note.IsPrivate,
+			CreateDt:   note.CreateDt,
+			UpdateDt:   note.UpdateDt,
+			ChileNotes: nil,
+		}
+
+		if note.ParentNoteId == note.Id {
+			if note.IsPrivate {
+				privateNotes = append(privateNotes, notesMap[note.Id])
+			} else {
+				publicNotes = append(publicNotes, notesMap[note.Id])
+			}
+		} else {
+			childNotes[note.ParentNoteId] = append(childNotes[note.ParentNoteId], notesMap[note.Id])
+		}
 	}
 
-	for privateRows.Next() {
-		var note GetNoteResponse
-		err := privateRows.StructScan(&note)
-		if err != nil {
-			return common.Response{
-				Code:  http.StatusInternalServerError,
-				Error: constant.ErrInternal,
-			}
-		}
-		notes.Private = append(notes.Private, note)
+	for _, note := range notesMap {
+		note.ChileNotes = childNotes[note.Id]
+	}
+
+	notes := GetNotesResponse{
+		Public:  publicNotes,
+		Private: privateNotes,
 	}
 
 	return common.Response{
@@ -243,7 +247,7 @@ func V1GetNote(req *GetNoteRequest, c echo.Context) common.Response {
 				OR n.user_id = ?
 			)
 		ORDER BY
-			h.order`, req.Id, req.Id, userId).StructScan(&note); err != nil {
+			h.order`, req.Id, userId).StructScan(&note); err != nil {
 		return common.Response{
 			Code:  http.StatusInternalServerError,
 			Error: constant.ErrInternal,
@@ -289,9 +293,10 @@ func V1PutNote(req *PutNoteRequest, c echo.Context) common.Response {
 	}
 
 	repo := dao.GetRepo()
+	// Public이거나 작성자가 본인일 경우에만 수정 가능
 	query := `UPDATE note SET title = ?, content = ?, is_private = ?
-            WHERE (id = ? AND delete_dt is NULL) AND (is_private = FALSE OR user_id = ?)`
-	result, err := repo.Writer().Exec(query, req.Title, req.Content, req.IsPrivate, req.Id)
+            WHERE id = ? AND delete_dt is NULL AND (is_private = FALSE OR user_id = ?)`
+	result, err := repo.Writer().Exec(query, req.Title, req.Content, req.IsPrivate, req.Id, userId)
 	if err != nil {
 		return common.Response{
 			Code:  http.StatusInternalServerError,
@@ -299,7 +304,7 @@ func V1PutNote(req *PutNoteRequest, c echo.Context) common.Response {
 		}
 	}
 
-	// 지워지지 않았고, Public이 아닐 경우에는 user_id 확인 후 다를 경우 BadRequest 에러
+	// 지워지지 않았고, Public이 아닐 경우에는 소유주 확인하고 아니라면 BadRequest 에러
 	affectedRows, err := result.RowsAffected()
 	if affectedRows < 1 {
 		return common.Response{
@@ -351,8 +356,21 @@ func V1DeleteNote(req *DeleteNoteRequest, c echo.Context) common.Response {
 	}
 
 	repo := dao.GetRepo()
+	// Public이거나 작성자가 본인일 경우에만 삭제 가능
 	query := `UPDATE note SET delete_dt = ?
-            WHERE (id = ? AND delete_dt is NULL) AND (is_private = FALSE OR user_id = ?)`
+				WHERE id IN (
+					WITH RECURSIVE cte (note_id, note_parent_id) AS (
+						SELECT	note_id, parent_note_id
+						FROM	note_hierarchy
+						WHERE	note_id = ?
+						UNION ALL
+						SELECT	n.note_id, n.parent_note_id
+						FROM	note_hierarchy n
+						INNER JOIN cte
+								ON cte.note_id = n.parent_note_id AND cte.note_id != n.note_id
+					)
+					SELECT note_id FROM cte
+				) AND delete_dt is NULL AND (is_private = FALSE OR user_id = ?)`
 	result, err := repo.Writer().Exec(query, time.Now(), req.Id, userId)
 	if err != nil {
 		return common.Response{
@@ -361,7 +379,7 @@ func V1DeleteNote(req *DeleteNoteRequest, c echo.Context) common.Response {
 		}
 	}
 
-	// 지워지지 않았고, Public이 아닐 경우에는 user_id 확인 후 다를 경우 BadRequest 에러
+	// 지워지지 않았고, Public이 아닐 경우에는 소유주 확인하고 아니라면 BadRequest 에러
 	affectedRows, err := result.RowsAffected()
 	if affectedRows < 1 {
 		return common.Response{
@@ -370,8 +388,6 @@ func V1DeleteNote(req *DeleteNoteRequest, c echo.Context) common.Response {
 		}
 	}
 
-	// TODO: Cascade update delete_dt for note_id and parent_note_id
-	// FIXME: Below code will delete note_hierarchy, not update delete_dt (will remain dirty rows)
 	_, err = repo.Writer().Exec(
 		`DELETE FROM note_hierarchy WHERE note_id = ?`, req.Id,
 	)

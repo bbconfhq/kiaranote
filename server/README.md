@@ -1,5 +1,8 @@
 # kiaranote-server 
 
+* [Concept](https://demo.hedgedoc.org/JOieJRo0QNesVBdgEel48Q)
+* [ERD](https://www.erdcloud.com/d/h2HrcZe3gYPNMe6Zb)
+
 ## 로컬 개발 환경 설정
 
 ### Prerequisites
@@ -90,4 +93,12 @@ make run
 
 ```shell
 swag init -d ./cmd/server/,./ --parseInternal --generatedTime
+```
+
+### Test
+
+테스트를 위해선 데이터베이스 연결(`.env.test` 참고)이 필요합니다.
+
+```shell
+go test ./...
 ```

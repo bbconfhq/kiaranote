@@ -76,7 +76,7 @@ func TestV1GetUsers(t *testing.T) {
 	assert.Equal(t, "1", user.Username)
 }
 
-func TestV1PostUsers(t *testing.T) {
+func TestV1PostUser(t *testing.T) {
 	e, repo := tests.MockMain()
 	tests.TruncateTable(repo.Reader(), []string{"audit_log", "user"})
 
@@ -85,7 +85,7 @@ func TestV1PostUsers(t *testing.T) {
 	createAdmin(repo, adminUsername, adminPassword)
 	c := loginAdmin(e, adminUsername, adminPassword)
 
-	response := handler.V1PostUsers(&handler.PostUsersRequest{Username: "2", Password: "2"}, c)
+	response := handler.V1PostUser(&handler.PostUserRequest{Username: "2", Password: "2"}, c)
 	assert.Equal(t, http.StatusCreated, response.Code)
 
 	response = handler.V1GetUsers(nil, c)
@@ -96,7 +96,7 @@ func TestV1PostUsers(t *testing.T) {
 	assert.Equal(t, "1", users[0].Username)
 	assert.Equal(t, "2", users[1].Username)
 
-	response = handler.V1PostUsers(&handler.PostUsersRequest{Username: "2", Password: "2"}, c)
+	response = handler.V1PostUser(&handler.PostUserRequest{Username: "2", Password: "2"}, c)
 	assert.Equal(t, http.StatusBadRequest, response.Code)
 	assert.Equal(t, constant.ErrBadRequest, response.Error)
 }
@@ -110,13 +110,7 @@ func TestV1GetUser(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues("0")
 
-	response := handler.V1GetUser(nil, c)
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-	assert.Equal(t, constant.ErrBadRequest, response.Error)
-
-	c.SetParamValues("1")
-
-	response = handler.V1GetUser(nil, c)
+	response := handler.V1GetUser(&handler.GetUserRequest{Id: 0}, c)
 	assert.Equal(t, http.StatusUnauthorized, response.Code)
 	assert.Equal(t, constant.ErrUnauthorized, response.Error)
 
@@ -136,7 +130,7 @@ func TestV1GetUser(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[0].Id, 10))
 
-	response = handler.V1GetUser(nil, c)
+	response = handler.V1GetUser(&handler.GetUserRequest{Id: users[0].Id}, c)
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	user := response.Data.(handler.GetUserResponse)
@@ -151,15 +145,9 @@ func TestV1PutUser(t *testing.T) {
 	c := loginGuest(e)
 	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
-	c.SetParamValues("0")
-
-	response := handler.V1PutUser(&handler.PutUserRequest{Id: 1}, c)
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-	assert.Equal(t, constant.ErrBadRequest, response.Error)
-
 	c.SetParamValues("1")
 
-	response = handler.V1PutUser(&handler.PutUserRequest{
+	response := handler.V1PutUser(&handler.PutUserRequest{
 		Id:       1,
 		Username: "1",
 		Password: "1",
@@ -194,7 +182,7 @@ func TestV1PutUser(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[0].Id, 10))
 
-	response = handler.V1GetUser(nil, c)
+	response = handler.V1GetUser(&handler.GetUserRequest{Id: users[0].Id}, c)
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	user := response.Data.(handler.GetUserResponse)
@@ -209,15 +197,9 @@ func TestV1DeleteUser(t *testing.T) {
 	c := loginGuest(e)
 	c.SetPath("/user/:user_id")
 	c.SetParamNames("user_id")
-	c.SetParamValues("0")
-
-	response := handler.V1DeleteUser(nil, c)
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-	assert.Equal(t, constant.ErrBadRequest, response.Error)
-
 	c.SetParamValues("1")
 
-	response = handler.V1DeleteUser(nil, c)
+	response := handler.V1DeleteUser(&handler.DeleteUserRequest{Id: 1}, c)
 	assert.Equal(t, http.StatusUnauthorized, response.Code)
 	assert.Equal(t, constant.ErrUnauthorized, response.Error)
 
@@ -236,7 +218,7 @@ func TestV1DeleteUser(t *testing.T) {
 	c.SetParamNames("user_id")
 	c.SetParamValues(strconv.FormatInt(users[1].Id, 10))
 
-	response = handler.V1DeleteUser(nil, c)
+	response = handler.V1DeleteUser(&handler.DeleteUserRequest{Id: users[1].Id}, c)
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	response = handler.V1GetUsers(nil, c)

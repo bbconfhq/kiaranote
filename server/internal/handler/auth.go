@@ -13,16 +13,50 @@ import (
 	"time"
 )
 
-type LoginRequest struct {
-	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
-	Password string `json:"password" validate:"required"`
-}
-
 const salt = ""
 
 func EncodeHash(value string) string {
 	key, _ := scrypt.Key([]byte(value), []byte(salt), 32768, 8, 1, 32)
 	return hex.EncodeToString(key)
+}
+
+type RegisterRequest struct {
+	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
+	Password string `json:"password" validate:"required"`
+}
+
+// V1Register    godoc
+// @Summary      Register
+// @Description  Request register
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        req	body		RegisterRequest	true	"Username and password"
+// @Success      200	{object}	response
+// @Failure      400	{object}	response
+// @Failure      500	{object}	response
+// @Router       /auth/register [post]
+func V1Register(req *RegisterRequest, c echo.Context) common.Response {
+	repo := dao.GetRepo()
+	_, err := repo.Writer().Exec(
+		`INSERT INTO user (username, password, role) VALUES (?, ?, ?)`,
+		req.Username, EncodeHash(req.Password), constant.RoleGuest,
+	)
+	if err != nil {
+		return common.Response{
+			Code:  http.StatusBadRequest,
+			Error: constant.ErrBadRequest,
+		}
+	}
+
+	return common.Response{
+		Code: http.StatusOK,
+	}
+}
+
+type LoginRequest struct {
+	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
+	Password string `json:"password" validate:"required"`
 }
 
 // V1Login   godoc

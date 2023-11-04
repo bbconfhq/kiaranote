@@ -13,16 +13,73 @@ import (
 	"time"
 )
 
-type LoginRequest struct {
-	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
-	Password string `json:"password" validate:"required"`
-}
-
 const salt = ""
 
 func EncodeHash(value string) string {
 	key, _ := scrypt.Key([]byte(value), []byte(salt), 32768, 8, 1, 32)
 	return hex.EncodeToString(key)
+}
+
+type RegisterRequest struct {
+	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
+	Password string `json:"password" validate:"required"`
+}
+
+// V1Register    godoc
+// @Summary      Register
+// @Description  Request register
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        req	body		RegisterRequest	true	"Username and password"
+// @Success      200	{object}	response
+// @Failure      400	{object}	response
+// @Failure      500	{object}	response
+// @Router       /auth/register [post]
+func V1Register(req *RegisterRequest, c echo.Context) common.Response {
+	repo := dao.GetRepo()
+
+	rows, err := repo.Reader().Query(`SELECT COUNT(*) FROM user`)
+	if err != nil {
+		return common.Response{
+			Code:  http.StatusInternalServerError,
+			Error: constant.ErrInternal,
+		}
+	}
+
+	// First user is admin
+	role := constant.RoleGuest
+	if rows.Next() {
+		var count int64
+		err := rows.Scan(&count)
+		if err != nil {
+			panic(err)
+		}
+
+		if count == 0 {
+			role = constant.RoleAdmin
+		}
+	}
+
+	_, err = repo.Writer().Exec(
+		`INSERT INTO user (username, password, role) VALUES (?, ?, ?)`,
+		req.Username, EncodeHash(req.Password), role,
+	)
+	if err != nil {
+		return common.Response{
+			Code:  http.StatusBadRequest,
+			Error: constant.ErrBadRequest,
+		}
+	}
+
+	return common.Response{
+		Code: http.StatusOK,
+	}
+}
+
+type LoginRequest struct {
+	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
+	Password string `json:"password" validate:"required"`
 }
 
 // V1Login   godoc

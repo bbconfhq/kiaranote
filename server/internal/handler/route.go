@@ -15,6 +15,7 @@ func InitV1Handler(e *echo.Echo) {
 
 	e.POST("v1/auth/login", BaseHandler(LoginRequest{}, V1Login))
 	e.GET("v1/auth/logout", BaseHandler(LogoutRequest{}, V1Logout))
+	e.POST("v1/auth/register", BaseHandler(RegisterRequest{}, V1Register))
 
 	e.GET("v1/user", BaseHandler(GetUsersRequest{}, V1GetUsers), middleware.AuthMiddleware(constant.RoleAdmin))
 	e.POST("v1/user", BaseHandler(PostUserRequest{}, V1PostUser), middleware.AuthMiddleware(constant.RoleAdmin))

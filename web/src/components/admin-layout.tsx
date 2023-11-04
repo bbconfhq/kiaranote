@@ -2,8 +2,10 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import {Layout, Menu, MenuProps} from 'antd';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {Link, Outlet} from 'react-router-dom';
+
+import { getNotes } from '../api/note';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -27,6 +29,9 @@ const items: MenuItem[] = [
 ];
 const AdminLayout = () => {
   const { Content, Sider } = Layout;
+  useEffect(() => {
+    getNotes().then((res) => console.log(res));
+  }, []);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

@@ -1,15 +1,30 @@
 import {UserOutlined, LockOutlined} from '@ant-design/icons';
 import {Button, Divider, Form, Input, Space, Typography} from 'antd';
+import { HttpStatusCode } from 'axios';
 import React from 'react';
-import {Link} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { auth } from '../api';
+
+
+type SignInFormValues = {
+  username: string;
+  password: string;
+};
 
 const SignInPage = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<SignInFormValues>();
   const { Text, Link: AntdLink } = Typography;
+  const navigate = useNavigate();
 
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
-  };
+
+  const onFinish = async (values: SignInFormValues) => {
+    const response = await auth.signIn(values.username, values.password);
+    if (response.status === HttpStatusCode.Ok) {
+      navigate('/');
+    } else {
+      console.error(response.data);
+    }  };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);

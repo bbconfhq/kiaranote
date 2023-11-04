@@ -1,14 +1,31 @@
 import {UserOutlined, LockOutlined} from '@ant-design/icons';
-import {Button, Divider, Form, Input, Space, Typography} from 'antd';
+import { Button, Divider, Form, Input, Space, Typography } from 'antd';
+import { HttpStatusCode } from 'axios';
 import React from 'react';
-import {Link} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { auth } from '../api';
+
+
+type RegisterFormValues = {
+  username: string;
+  password: string;
+  confirm: string;
+};
 
 const RegisterPage = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<RegisterFormValues>();
+  const navigate = useNavigate();
   const { Text, Link: AntdLink } = Typography;
 
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
+  const onFinish = async (values: RegisterFormValues) => {
+    const response = await auth.registerUser(values.username, values.password);
+    if (response.status === HttpStatusCode.Ok) {
+      navigate('/sign-in');
+    } else {
+      console.error(response.data);
+    }
+
   };
 
   const onFinishFailed = (errorInfo: any) => {

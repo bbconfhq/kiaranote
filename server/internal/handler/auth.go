@@ -38,9 +38,32 @@ type RegisterRequest struct {
 // @Router       /auth/register [post]
 func V1Register(req *RegisterRequest, c echo.Context) common.Response {
 	repo := dao.GetRepo()
-	_, err := repo.Writer().Exec(
+
+	rows, err := repo.Reader().Query(`SELECT COUNT(*) FROM user`)
+	if err != nil {
+		return common.Response{
+			Code:  http.StatusInternalServerError,
+			Error: constant.ErrInternal,
+		}
+	}
+
+	// First user is admin
+	role := constant.RoleGuest
+	if rows.Next() {
+		var count int64
+		err := rows.Scan(&count)
+		if err != nil {
+			panic(err)
+		}
+
+		if count == 0 {
+			role = constant.RoleAdmin
+		}
+	}
+
+	_, err = repo.Writer().Exec(
 		`INSERT INTO user (username, password, role) VALUES (?, ?, ?)`,
-		req.Username, EncodeHash(req.Password), constant.RoleGuest,
+		req.Username, EncodeHash(req.Password), role,
 	)
 	if err != nil {
 		return common.Response{

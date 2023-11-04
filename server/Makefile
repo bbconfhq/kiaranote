@@ -1,4 +1,6 @@
-run:
+doc:
+	swag init -d ./cmd/server/,./ --parseInternal --generatedTime
+run: doc
 	go run cmd/server/main.go
 
 db:

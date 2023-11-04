@@ -12,6 +12,8 @@ else ifeq ($(c), down)
 	docker-compose -f .docker/docker-compose.dev.yaml $(c) -v
 else ifeq ($(c), init)
 	mysql -h127.0.0.1 -ukiara_admin -pkiara_admin_pass < tools/init/db.sql
+else ifeq ($(c), sample)
+	mysql -h127.0.0.1 -ukiara_admin -pkiara_admin_pass < tools/init/sample.sql
 endif
 
 create_migration:

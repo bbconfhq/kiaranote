@@ -16,14 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../api';
 
 const RegisterPage = () => {
-  // const onFinish = (values: any) => {
-  //   console.log('Success:', values);
-  // };
-  //
-  // const onFinishFailed = (errorInfo: any) => {
-  //   console.log('Failed:', errorInfo);
-  // };
-
   const navigate = useNavigate();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

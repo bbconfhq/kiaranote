@@ -7,7 +7,6 @@ import {
   Routes,
 } from 'react-router-dom';
 
-
 import './index.css';
 import '@radix-ui/themes/styles.css';
 import AdminLayout from './components/admin-layout';
@@ -15,7 +14,6 @@ import AuthLayout from './components/auth-layout';
 import RegisterPage from './pages/register';
 import SignInPage from './pages/sign-in';
 
-// <RouterProvider router={router} />
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

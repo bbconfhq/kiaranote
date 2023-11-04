@@ -19,9 +19,9 @@ type GetUsersResponse struct {
 	Id          int64     `json:"id"`
 	Username    string    `json:"username"`
 	Role        string    `json:"role"`
-	LastLoginDt time.Time `json:"last_login_dt"`
-	CreateDt    time.Time `json:"create_dt"`
-	UpdateDt    time.Time `json:"update_dt"`
+	LastLoginDt time.Time `db:"last_login_dt" json:"last_login_dt"`
+	CreateDt    time.Time `db:"create_dt" json:"create_dt"`
+	UpdateDt    time.Time `db:"update_dt" json:"update_dt"`
 }
 
 // V1GetUsers   godoc

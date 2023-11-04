@@ -74,7 +74,7 @@ func TestV1PostNote(t *testing.T) {
 	}
 	response := handler.V1PostNote(&payload, c)
 
-	assert.Equal(t, 1, response.Data.(int64))
+	assert.Equal(t, (int64)(1), response.Data.(int64))
 }
 
 //func TestV1GetNote(t *testing.T) {

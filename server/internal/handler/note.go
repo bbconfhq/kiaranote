@@ -166,6 +166,7 @@ func V1PostNote(req *PostNoteRequest, c echo.Context) common.Response {
 	}
 
 	// If there is no request for parent_note_id, set note as root
+	// FIXME: In schema, parent_note_id is nullable. But in code, it cannot be null
 	if req.ParentNoteId == 0 {
 		req.ParentNoteId = noteId
 	}

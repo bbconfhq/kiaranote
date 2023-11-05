@@ -28,11 +28,6 @@ type NoteItem = {
   update_dt: string;
 };
 
-type NoteResponse = {
-  public: NoteItem[];
-  private: NoteItem[];
-};
-
 const treeRootStyle = css({
   listStyleType: 'none',
   paddingInlineStart: 0,
@@ -61,6 +56,19 @@ const Placeholder = ({ depth }: { depth: number }) => {
   );
 };
 
+type TreeNodeDataState = {
+  nodes: NodeModel<NoteItem>[];
+  childrenMap: Map<number, boolean>;
+};
+
+const resolveChildrenMap = (nodes: NodeModel<NoteItem>[]) => {
+  const map = new Map<number, boolean>();
+  nodes.forEach((node) => {
+    map.set(node.parent as number, true);
+  });
+  return map;
+};
+
 const reorderArray = (array: NodeModel<NoteItem>[], sourceIndex: number, targetIndex: number) => {
   const newArray = [...array];
   const element = newArray.splice(sourceIndex, 1)[0];
@@ -71,8 +79,10 @@ const reorderArray = (array: NodeModel<NoteItem>[], sourceIndex: number, targetI
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState<NoteResponse | null>(null);
-  const [treeData, setTreeData] = useState<NodeModel<NoteItem>[]>([]);
+  const [treeData, setTreeData] = useState<TreeNodeDataState>({
+    nodes: [],
+    childrenMap: new Map(),
+  });
   const { ref, toggle } = useTreeOpenHandler();
 
   const handleDrop = (_: unknown, e: DropOptions) => {
@@ -80,8 +90,8 @@ const MainPage = () => {
     if (dragSourceId == null || dropTargetId == null) {
       return;
     }
-    const start = treeData.find((v) => v.id === dragSourceId);
-    const end = treeData.find((v) => v.id === dropTargetId);
+    const start = treeData.nodes.find((v) => v.id === dragSourceId);
+    const end = treeData.nodes.find((v) => v.id === dropTargetId);
 
     if (
       start?.parent === dropTargetId &&
@@ -89,12 +99,15 @@ const MainPage = () => {
       typeof destinationIndex === 'number'
     ) {
       setTreeData((prev) => {
-        const output = reorderArray(
-          prev,
-          prev.indexOf(start),
+        const nodes = reorderArray(
+          prev.nodes,
+          prev.nodes.indexOf(start),
           destinationIndex
         );
-        return output;
+        return {
+          nodes,
+          childrenMap: resolveChildrenMap(nodes),
+        };
       });
     }
 
@@ -104,7 +117,7 @@ const MainPage = () => {
       typeof destinationIndex === 'number'
     ) {
       if (
-        getDescendants(treeData, dragSourceId).find(
+        getDescendants(treeData.nodes, dragSourceId).find(
           (el) => el.id === dropTargetId
         ) ||
         dropTargetId === dragSourceId ||
@@ -112,14 +125,19 @@ const MainPage = () => {
       )
         return;
       setTreeData((prev) => {
-        const output = reorderArray(
-          prev,
-          prev.indexOf(start),
+        const nodes = reorderArray(
+          prev.nodes,
+          prev.nodes.indexOf(start),
           destinationIndex
         );
-        const movedElement = output.find((el) => el.id === dragSourceId);
-        if (movedElement) movedElement.parent = dropTargetId;
-        return output;
+        const movedElement = nodes.find((el) => el.id === dragSourceId);
+        if (movedElement) {
+          movedElement.parent = dropTargetId;
+        }
+        return {
+          nodes,
+          childrenMap: resolveChildrenMap(nodes),
+        };
       });
     }
   };
@@ -142,8 +160,13 @@ const MainPage = () => {
     (async function() {
       try {
         const response = await api.getNotes();
-        setNotes(response.data.data);
-        setTreeData([...response.data.data.public, ...response.data.data.private].flatMap((item) => getTreeNodeModel(item, 0)));
+        setTreeData(() => {
+          const nodes = [...response.data.data.public, ...response.data.data.private].flatMap((item) => getTreeNodeModel(item, 0));
+          return {
+            nodes,
+            childrenMap: resolveChildrenMap(nodes),
+          };
+        });
       } catch (err) {
         if (err instanceof AxiosError) {
           if (err.response?.status === HttpStatusCode.Unauthorized) {
@@ -155,15 +178,11 @@ const MainPage = () => {
     })();
   }, []);
 
-  if (notes == null) {
-    return null;
-  }
-
   return (
     <Box height={'100%'}>
       <Section>
         <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-          <Tree tree={treeData}
+          <Tree tree={treeData.nodes}
             ref={ref}
             classes={{
               root: treeRootStyle,
@@ -177,9 +196,10 @@ const MainPage = () => {
             placeholderRender={(node, { depth }) => (
               <Placeholder depth={depth} />
             )}
-            render={(node, { depth, isOpen, isDropTarget }) => (
+            render={(node, { depth, isOpen }) => (
               <Node
                 node={node}
+                isLeaf={!treeData.childrenMap.get(node.id as number)}
                 depth={depth}
                 isOpen={isOpen}
                 onClick={() => {

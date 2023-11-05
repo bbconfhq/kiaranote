@@ -81,6 +81,11 @@ type LoginRequest struct {
 	Username string `json:"username" validate:"required,alphanumunicode,lte=20"`
 	Password string `json:"password" validate:"required"`
 }
+type LoginResponse struct {
+	Id       int64  `json:"id"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}
 
 // V1Login   godoc
 // @Summary      Login
@@ -96,18 +101,14 @@ type LoginRequest struct {
 // @Router       /auth/login [post]
 func V1Login(req *LoginRequest, c echo.Context) common.Response {
 	repo := dao.GetRepo()
-	rows, err := repo.Reader().Query("SELECT id, username, role FROM user WHERE username = ? AND password = ?", req.Username, EncodeHash(req.Password))
+	rows, err := repo.Reader().Queryx("SELECT id, username, role FROM user WHERE username = ? AND password = ?", req.Username, EncodeHash(req.Password))
 	if err != nil {
 		panic(err)
 	}
 
-	var (
-		id       int64
-		username string
-		role     string
-	)
+	var user LoginResponse
 	if rows.Next() {
-		err := rows.Scan(&id, &username, &role)
+		err := rows.StructScan(&user)
 		if err != nil {
 			panic(err)
 		}
@@ -124,9 +125,9 @@ func V1Login(req *LoginRequest, c echo.Context) common.Response {
 			MaxAge:   86400 * 7,
 			HttpOnly: true,
 		}
-		sess.Values["user_id"] = id
-		sess.Values["username"] = username
-		sess.Values["user_role"] = role
+		sess.Values["user_id"] = user.Id
+		sess.Values["username"] = user.Username
+		sess.Values["user_role"] = user.Role
 		if err := sess.Save(c.Request(), c.Response()); err != nil {
 			return common.Response{
 				Code:  http.StatusInternalServerError,
@@ -135,13 +136,14 @@ func V1Login(req *LoginRequest, c echo.Context) common.Response {
 		}
 
 		_, err = repo.Writer().Exec(
-			`UPDATE user SET last_login_dt = ? WHERE id = ?`, time.Now(), id,
+			`UPDATE user SET last_login_dt = ? WHERE id = ?`, time.Now(), user.Id,
 		)
 		if err != nil {
 			panic(err)
 		}
 
 		return common.Response{
+			Data: user,
 			Code: http.StatusOK,
 		}
 	} else {

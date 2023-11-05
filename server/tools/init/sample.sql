@@ -1,11 +1,13 @@
 USE `kiaranote`;
 
+SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE note_hierarchy;
 TRUNCATE TABLE shared_note;
 TRUNCATE TABLE comment;
 TRUNCATE TABLE note;
 TRUNCATE TABLE audit_log;
 TRUNCATE TABLE user;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- Insert admin / admin user into the `user` table
 INSERT INTO `user` (`username`, `password`, `role`) VALUES

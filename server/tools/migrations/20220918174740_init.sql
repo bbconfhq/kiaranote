@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `audit_log`
     `action_target`       VARCHAR(255)  NOT NULL,
     `create_dt`           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
+    INDEX   (`user_id`),
     INDEX   (`action_type`),
     INDEX   (`action_target`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

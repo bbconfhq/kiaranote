@@ -1,5 +1,12 @@
 USE `kiaranote`;
 
+TRUNCATE TABLE note_hierarchy;
+TRUNCATE TABLE shared_note;
+TRUNCATE TABLE comment;
+TRUNCATE TABLE note;
+TRUNCATE TABLE audit_log;
+TRUNCATE TABLE user;
+
 -- Insert admin / admin user into the `user` table
 INSERT INTO `user` (`username`, `password`, `role`) VALUES
     ('admin', '7666af7301d9f4c41a8cb9b0234ff8f5d544e9dae20d710f77713322e76549e1', 'admin');

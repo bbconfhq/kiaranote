@@ -24,7 +24,7 @@ type NoteDto struct {
 	IsPrivate  bool       `json:"is_private"`
 	CreateDt   time.Time  `json:"create_dt"`
 	UpdateDt   time.Time  `json:"update_dt"`
-	ChileNotes []*NoteDto `json:"child_notes"`
+	ChildNotes []*NoteDto `json:"child_notes"`
 }
 
 // V1GetNotes   godoc
@@ -91,7 +91,7 @@ func V1GetNotes(_ *GetNotesRequest, c echo.Context) common.Response {
 			IsPrivate:  note.IsPrivate,
 			CreateDt:   note.CreateDt,
 			UpdateDt:   note.UpdateDt,
-			ChileNotes: nil,
+			ChildNotes: make([]*NoteDto, 0),
 		}
 
 		if note.ParentNoteId == note.Id {
@@ -106,7 +106,9 @@ func V1GetNotes(_ *GetNotesRequest, c echo.Context) common.Response {
 	}
 
 	for _, note := range notesMap {
-		note.ChileNotes = childNotes[note.Id]
+		if childNotes[note.Id] != nil {
+			note.ChildNotes = childNotes[note.Id]
+		}
 	}
 
 	notes := GetNotesResponse{

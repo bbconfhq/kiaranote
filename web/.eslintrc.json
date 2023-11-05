@@ -94,6 +94,7 @@
       "react/jsx-props-no-spreading": "off",
       "react/require-default-props": "off",
       "react/jsx-uses-react": "off",
+      "react/display-name": "off",
       "react/react-in-jsx-scope": "off",
       "semi": "off",
       "space-before-blocks": "error",

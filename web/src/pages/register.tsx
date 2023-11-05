@@ -9,11 +9,10 @@ import {
   TextField,
   Button,
 } from '@radix-ui/themes';
-import { HttpStatusCode } from 'axios';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { auth } from '../api';
+import { api } from '../api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -23,11 +22,12 @@ const RegisterPage = () => {
     const data = new FormData(e.currentTarget);
     const username = data.get('username') as string;
     const password = data.get('password') as string;
-    const response = await auth.registerUser(username, password);
-    if (response.status === HttpStatusCode.Ok) {
+    try {
+      await api.registerUser(username, password);
       navigate('/sign-in');
-    } else {
-      alert('Failed to register');
+    } catch (err) {
+      alert('failed to register');
+      console.error(err);
     }
   };
 

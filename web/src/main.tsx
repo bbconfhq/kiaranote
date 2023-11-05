@@ -7,10 +7,11 @@ import {
   Routes,
 } from 'react-router-dom';
 
-import './index.css';
 import '@radix-ui/themes/styles.css';
+import './index.css';
 import AdminLayout from './components/admin-layout';
 import AuthLayout from './components/auth-layout';
+import MainPage from './pages/app';
 import RegisterPage from './pages/register';
 import SignInPage from './pages/sign-in';
 
@@ -27,6 +28,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <Route path={'/sign-in'} element={<SignInPage />} />
             <Route path={'/register'} element={<RegisterPage />} />
           </Route>
+          <Route path={'/'} element={<MainPage />} />
         </Routes>
       </BrowserRouter>
     </Theme>

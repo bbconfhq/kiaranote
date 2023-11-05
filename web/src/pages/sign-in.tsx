@@ -1,95 +1,98 @@
-import {UserOutlined, LockOutlined} from '@ant-design/icons';
-import {Button, Divider, Form, Input, Space, Typography} from 'antd';
+import * as Form from '@radix-ui/react-form';
+import { FormField, FormLabel, FormMessage } from '@radix-ui/react-form';
+import {
+  Box,
+  Card,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+  Button,
+} from '@radix-ui/themes';
 import { HttpStatusCode } from 'axios';
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { auth } from '../api';
 
-
-type SignInFormValues = {
-  username: string;
-  password: string;
-};
-
-const SignInPage = () => {
-  const [form] = Form.useForm<SignInFormValues>();
-  const { Text, Link: AntdLink } = Typography;
+const RegisterPage = () => {
   const navigate = useNavigate();
 
-
-  const onFinish = async (values: SignInFormValues) => {
-    const response = await auth.signIn(values.username, values.password);
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const username = data.get('username') as string;
+    const password = data.get('password') as string;
+    const response = await auth.signIn(username, password);
     if (response.status === HttpStatusCode.Ok) {
       navigate('/');
     } else {
-      console.error(response.data);
-    }  };
-
-  const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+      alert('Failed to login');
+    }
   };
 
   return (
-    <Form
-      form={form}
-      name='login'
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete='off'
-    >
-      <Form.Item
-        name={'username'}
-        rules={[
-          {
-            required: true,
-            message: 'Please Input your Username'
-          }
-        ]}
-      >
-        <Input
-          prefix={<UserOutlined className={'site-form-item-icon'} />}
-          placeholder={'Username'}
-        />
-      </Form.Item>
+    <Flex align={'center'} justify={'center'} height={'100%'} width={'100%'}>
+      <Flex shrink='0' gap='6' direction='column' style={{ width: 416 }}>
+        <Card size='4'>
+          <Form.Root onSubmit={onSubmit}>
+            <Heading as='h3' size='6' trim='start' mb='5'>
+              Sign in
+            </Heading>
 
-      <Form.Item
-        name='password'
-        rules={[
-          {
-            required: true,
-            message: 'Please input your password'
-          }
-        ]}
-      >
-        <Input
-          prefix={<LockOutlined className={'site-form-item-icon'} />}
-          type={'password'}
-          placeholder={'Password'}
-        />
-      </Form.Item>
+            <FormField name={'username'}>
+              <Box mb='5'>
+                <FormLabel>
+                  <Text as='div' size='2' weight='bold' mb='2'>
+                    Username
+                  </Text>
+                </FormLabel>
+                <Form.Control asChild>
+                  <TextField.Input placeholder='Enter your username' required />
+                </Form.Control>
+                <FormMessage match={'valueMissing'}>
+                  <Text size={'2'} color={'crimson'}>
+                    Username is required
+                  </Text>
+                </FormMessage>
+                <FormMessage match={'badInput'}>
+                  <Text size={'2'} color={'crimson'}>
+                    Invalid username
+                  </Text>
+                </FormMessage>
+              </Box>
+            </FormField>
 
-      <Form.Item>
-        <Button
-          type={'primary'}
-          htmlType={'submit'}
-          className={'login-form-button'}
-          style={{ marginTop: '1.5rem' }}
-          block
-        >
-          Sign In
-        </Button>
-      </Form.Item>
+            <FormField name={'password'}>
+              <Box mb='5'>
+                <FormLabel>
+                  <Text as='div' size='2' weight='bold' mb='2'>
+                    Password
+                  </Text>
+                </FormLabel>
+                <Form.Control asChild>
+                  <TextField.Input
+                    type={'password'}
+                    placeholder='Enter your password'
+                    required
+                  />
+                </Form.Control>
+                <FormMessage match={'valueMissing'}>
+                  <Text size={'2'} color={'crimson'}>
+                    Password is required
+                  </Text>
+                </FormMessage>
+              </Box>
+            </FormField>
 
-      <Divider/>
-      <Space style={{width: '100%', justifyContent: 'center'}} size={'small'}>
-        <Text>Don't have an account?</Text>
-        <Link to={'/register'}>
-          <AntdLink>Sign Up</AntdLink>
-        </Link>
-      </Space>
-    </Form>
+            <Flex mt='6' justify='end' gap='3'>
+              <Button>Sign in</Button>
+            </Flex>
+          </Form.Root>
+        </Card>
+      </Flex>
+    </Flex>
   );
 };
 
-export default SignInPage;
+export default RegisterPage;

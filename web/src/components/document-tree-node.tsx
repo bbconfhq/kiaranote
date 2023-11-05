@@ -3,7 +3,9 @@ import * as ContextMenu from '@radix-ui/react-context-menu';
 import { FileTextIcon } from '@radix-ui/react-icons';
 import React, { MouseEventHandler } from 'react';
 
+import { css } from '../../styled-system/css';
 import { styled } from '../../styled-system/jsx';
+import { api } from '../api';
 
 const TREE_X_OFFSET = 22;
 
@@ -59,20 +61,29 @@ const Label = styled('div', {
   }
 });
 
-
-const ContextMenuWrapper=({children}: {children: React.ReactNode})=>{
+const ContextMenuWrapper=({
+  onDelete,
+  children
+}: {
+  onDelete: (e: Event) => void;
+  children: React.ReactNode
+})=>{
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         {children}
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
-        <ContextMenu.Content>
-          <ContextMenu.Group>
-            <ContextMenu.Item onSelect={() => alert('Cut')}>Cut</ContextMenu.Item>
-            <ContextMenu.Item onSelect={() => alert('Copy')}>Copy</ContextMenu.Item>
-            <ContextMenu.Item onSelect={() => alert('Paste')}>Paste</ContextMenu.Item>
-          </ContextMenu.Group>
+        <ContextMenu.Content 
+          className={css({
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.12)',
+            minWidth: '200px',
+            padding: '8px',
+          })}
+        >
+          <ContextMenu.Item onSelect={onDelete}>삭제</ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>
     </ContextMenu.Root>
@@ -93,8 +104,15 @@ const Node = ({node, depth, isOpen, isLeaf, onClick }: {
     onClick(node.id);
   };
 
+  const handleContextMenuDelete = async (e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await api.deleteNote(node.id as number);
+    alert(`${node.text} 삭제 완료`);
+  };
+
   return (
-    <ContextMenuWrapper>
+    <ContextMenuWrapper onDelete={handleContextMenuDelete}>
       <Wrapper style={{ marginInlineStart: indent }} onClick={handleToggle}>
         <ExpandIconWrapper expanded={isOpen}>
           {!isLeaf && node.droppable && (

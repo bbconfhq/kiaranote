@@ -20,5 +20,8 @@ export const api = {
   },
   getNotes: async () => {
     return request.get('/v1/note');
+  },
+  deleteNote: async (id: number) => {
+    return request.delete(`/v1/note/${id}`);
   }
 };

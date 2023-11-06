@@ -104,11 +104,10 @@ const Node = ({node, depth, isOpen, isLeaf, onClick }: {
     onClick(node.id);
   };
 
-  const handleContextMenuDelete = async (e: Event) => {
+  const handleContextMenuDelete = (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
-    await api.deleteNote(node.id as number);
-    alert(`${node.text} 삭제 완료`);
+    api.deleteNote(node.id as number);
   };
 
   return (
